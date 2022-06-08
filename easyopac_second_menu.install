@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file
+ * Installs the second tier menu.
+ */
+
+/**
+ * Describe custom menu properties.
+ *
+ * @return array
+ *   New menu array.
+ */
+function _easyopac_second_menu_menu_describer() {
+  return [
+    'menu_name' => 'second_tier_menu',
+    'title' => 'Second Tier Menu',
+  ];
+}
+
+/**
+ * Get panels everywhere page "did" identifier.
+ *
+ * @return string
+ *   Returns "did" display identifier.
+ */
+function _easyopac_second_menu_get_did() {
+  $query = db_select('page_manager_handlers', 'pmh')
+    ->fields('pmh', ['conf'])
+    ->condition('pmh.name', 'site_template_panel_context');
+  $result = $query->execute()->fetchColumn();
+  $conf = unserialize($result);
+
+  return $conf['did'];
+}
+
+/**
+ * Implements hook_install().
+ */
+function easyopac_second_menu_install() {
+  $t = get_t();
+
+  // Create secondary tier menu.
+  $menu = _easyopac_second_menu_menu_describer();
+  menu_save($menu);
+  cache_clear_all();
+
+  // Create new pane wrapper.
+  $new_pane = panels_new_pane('block', 'menu-second_tier_menu', TRUE);
+
+  if ($new_pane) {
+    // Set pane's configuration.
+    $new_pane->configuration['override_title'] = TRUE;
+    $new_pane->configuration['override_title_text'] = '';
+    $new_pane->configuration['override_title_heading'] = 'h2';
+
+    $did = _easyopac_second_menu_get_did();
+
+    if (is_numeric($did)) {
+      // Load full display of site template to add new pane.
+      /** @var \panels_display $display */
+      $display = panels_load_display($did);
+      if ($display) {
+        $display->add_pane($new_pane, 'second_menu_tier');
+        panels_save_display($display);
+      }
+    }
+    else {
+      drupal_set_message($t('Incorrect reference to panels display'), 'warning', FALSE);
+      watchdog('easyopac_second_menu', 'Identifier "did" passed to panels_load_display is not int - @did.', ['@did' => $did]);
+    }
+  }
+  else {
+    drupal_set_message($t('Failed to create new pane.'), 'warning', FALSE);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function easyopac_second_menu_uninstall() {
+  menu_delete(_easyopac_second_menu_menu_describer());
+  cache_clear_all();
+
+  $did = _easyopac_second_menu_get_did();
+  /** @var \panels_display $display */
+  $display = panels_load_display($did);
+  $panels = $display->panels['second_menu_tier'];
+
+  foreach ($panels as $panel) {
+    unset($display->content[$panel]);
+  }
+
+  unset($display->panels['second_menu_tier']);
+  panels_save_display($display);
+}

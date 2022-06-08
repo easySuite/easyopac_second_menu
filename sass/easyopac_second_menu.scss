@@ -1,0 +1,275 @@
+@import '../../../themes/ddbasic/sass/base';
+
+$_secondary-tier-height: 58px;
+
+.site-header {
+  > .second-menu-tier-wrapper {
+    @include transition(
+        transform $speed $ease,
+        box-shadow $speed $ease
+    );
+    position: fixed;
+    z-index: $z-header - 3;
+    left: 0;
+    width: 100%;
+    background-color: $color-primary;
+    box-shadow: $box-shadow;
+
+    // Tablet
+    @include media($tablet) {
+      @include transition(
+          transform $speed $ease,
+          top 0ms $ease $speed
+      );
+      @include transform(translateY(-300%));
+      display: block;
+      overflow: scroll;
+      max-height: 100%;
+      background-color: transparent;
+      box-shadow: none;
+      height: 75vh;
+      .mobile-menu-is-open & {
+        @include transform(translateY(0%));
+      }
+    }
+
+    // Search Form Extended
+    .search-form-extended & {
+      @include transition(
+          top $speed $ease,
+          transform $speed $ease,
+          box-shadow $speed $ease
+      );
+    }
+
+    .second-menu-tier-inner {
+      @include wrapper;
+      position: relative;
+
+      // Tablet
+      @include media($tablet) {
+        width: 100%;
+        display: block;
+        box-shadow: none;
+        background-color: $color-primary;
+        .mobile-menu-is-open & {
+          box-shadow: $box-shadow;
+        }
+      }
+
+      .menu {
+        @include transition(
+            transform $speed $ease,
+            top 0ms $ease $speed
+        );
+        @include span-columns(9);
+
+        @include media($tablet) {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .pane-search-form {
+    $_base-top-value: $topbar-height;
+
+    $_selectors-top-values--search-form: (
+      // .admin-menu does not need the base value added.
+      '.admin-menu': $admin-menu-height - $_base-top-value,
+      '.admin-menu-with-shortcuts': 0,
+      '.toolbar': $toolbar-height,
+      '.search-form-extended': $search-form-extended-height,
+      '.search-form-extended.admin-menu': $search-form-extended-height + $admin-menu-height,
+      '.search-form-extended.admin-menu-with-shortcuts': $search-form-extended-height + $toolbar-height,
+      '.search-form-extended.toolbar': $search-form-extended-height + $toolbar-height,
+      '.search-form-extended.extended-search-is-not-open': 0,
+    );
+
+    @each $_selector, $_value in $_selectors-top-values--search-form {
+      #{$_selector} & {
+        top: $_base-top-value + $_value + $_secondary-tier-height !important;
+      }
+
+      @include media($tablet-min-width) {
+        // If there are too many links, we need to add even more padding.
+        #{$_selector}.secondary-menu-below-main & {
+          top: $_base-top-value + $_value + $search-form-extended-height + $_secondary-tier-height;
+        }
+
+        #{$_selector}.has-second-level-menu & {
+          top: $_base-top-value + $_value + $second-level-menu-height + $_secondary-tier-height !important;
+        }
+
+        #{$_selector}.has-second-level-menu.secondary-menu-below-main &,
+        #{$_selector}.has-second-level-menu.has-multiline-main-menu & {
+          top: $_base-top-value + $_value + $second-level-menu-height + $search-form-extended-height + $_secondary-tier-height;
+        }
+
+        // If there are too many links, we need to add even more padding.
+        #{$_selector}.has-multiline-main-menu & {
+          top: $_base-top-value + $_value  + $search-form-extended-height + $_secondary-tier-height;
+        }
+      }
+    }
+
+    top: 0;
+
+    // For readability, we'll leave media queries out of the mixin above.
+    @include media($tablet) {
+      top: $header-height;
+
+      .mobile-menu-is-open & {
+        padding-bottom: $header-height;
+      }
+
+      .admin-menu & {
+        top: $header-height + $admin-menu-height;
+      }
+
+      .search-form-extended.extended-search-is-not-open &,
+      .search-form-extended & {
+        top: $header-height;
+      }
+    }
+  }
+
+  .second-menu-tier-wrapper {
+    $_base-top-value: $topbar-height;
+
+    $_selectors-top-values--search-form: (
+      // .admin-menu does not need the base value added.
+      '.admin-menu': $admin-menu-height - $_base-top-value,
+      '.admin-menu-with-shortcuts': 0,
+      '.toolbar': $toolbar-height,
+      '.search-form-extended': $search-form-extended-height,
+      '.search-form-extended.admin-menu': $search-form-extended-height + $admin-menu-height,
+      '.search-form-extended.admin-menu-with-shortcuts': $search-form-extended-height + $toolbar-height,
+      '.search-form-extended.toolbar': $search-form-extended-height + $toolbar-height,
+    );
+
+    @each $_selector, $_value in $_selectors-top-values--search-form {
+      #{$_selector} & {
+        top: $_base-top-value + $_value;
+      }
+
+      @include media($tablet-min-width) {
+        // If there are too many links, we need to add even more padding.
+        #{$_selector}.secondary-menu-below-main & {
+          top: $_base-top-value + $_value + $search-form-extended-height;
+        }
+
+        #{$_selector}.has-second-level-menu & {
+          top: $_base-top-value + $_value + $second-level-menu-height;
+        }
+
+        #{$_selector}.has-second-level-menu.secondary-menu-below-main &,
+        #{$_selector}.has-second-level-menu.has-multiline-main-menu & {
+          top: $_base-top-value + $_value + $second-level-menu-height + $search-form-extended-height;
+        }
+
+        // If there are too many links, we need to add even more padding.
+        #{$_selector}.has-multiline-main-menu & {
+          top: $_base-top-value + $_value  + $search-form-extended-height;
+        }
+      }
+    }
+
+    top: 0;
+
+    // For readability, we'll leave media queries out of the mixin above.
+    @include media($tablet) {
+      top: $header-height;
+
+      .mobile-menu-is-open & {
+        padding-bottom: $header-height;
+      }
+
+      .admin-menu & {
+        top: $header-height + $admin-menu-height;
+      }
+
+      .search-form-extended.extended-search-is-not-open &,
+      .search-form-extended & {
+        top: $header-height;
+      }
+    }
+  }
+}
+
+// ==========================================================================
+// Main menu
+// ==========================================================================
+.second-tier-menu-wrapper {
+  ul {
+    &.menu {
+      > li {
+        position: relative;
+        float: left;
+        margin-right: 40px;
+
+        &:last-child {
+          margin-right: 0;
+        }
+
+        a {
+          &::after {
+            @include transition(height $speed-fast $ease);
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+          }
+
+          &:hover {
+            &::after {
+              height: 5px;
+            }
+          }
+        }
+
+        &.active-trail {
+          a {
+            &::after {
+              height: 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  > ul.menu {
+    @include font('display-small');
+
+    > li {
+      min-height: $search-form-extended-height - 28;
+      padding: 18px 0;
+
+      a {
+        color: $color-text-on-primary;
+
+        &::after {
+          background-color: $color-text-on-primary;
+
+          // Tablet
+          @include media($tablet) {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+.content-wrapper {
+  padding-top: $_secondary-tier-height;
+  @include media($mobile) {
+    padding-top: 0;
+  }
+  @include media($tablet) {
+    padding-top: 0;
+  }
+}

@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * Add second tier menu right below the main menu.
+ */
+
+/**
+ * Implements hook_ctools_plugin_pre_alter().
+ */
+function easyopac_second_menu_ctools_plugin_pre_alter(&$plugin, &$info) {
+  if ($plugin['module'] == 'ding_frontend' && $plugin['name'] == 'ding2_site_template') {
+    $plugin['regions']['second_menu_tier'] = 'Second Menu Tier';
+    $plugin['path'] = drupal_get_path('module', 'easyopac_second_menu') . '/plugins/layouts/site_template';
+    $plugin['theme'] = 'ding2_site_template';
+  }
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function easyopac_second_menu_theme_registry_alter(&$theme_registry) {
+  $module_path = drupal_get_path('module', 'easyopac_second_menu');
+  // Find all .tpl.php files in this module's folder recursively.
+  $template_file_objects = drupal_find_theme_templates($theme_registry, '.tpl.php', $module_path);
+  // Iterate through all found template file objects.
+  foreach ($template_file_objects as $key => $template_file_object) {
+    // If the template has not already been overridden by a theme.
+    // Alter the theme path and template elements.
+    $theme_registry[$key]['theme path'] = $module_path;
+    $theme_registry[$key] = array_merge($theme_registry[$key], $template_file_object);
+    $theme_registry[$key]['type'] = 'module';
+  }
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function easyopac_second_menu_block_view_alter(&$data, $block) {
+  if ($block->delta === 'second_tier_menu') {
+    if (!empty($data['content'])) {
+      $data['content']['#attached']['css'][] = drupal_get_path('module', 'easyopac_second_menu') . '/css/easyopac_second_menu.css';
+    }
+  }
+}
+
+/**
+ * Implements hook_form_system_theme_settings_alter().
+ */
+function easyopac_second_menu_form_system_theme_settings_alter(&$form, &$form_state) {
+  if (isset($form_state['build_info']['args'][0]) && ($theme = $form_state['build_info']['args'][0]) && color_get_info($theme) && function_exists('gd_info')) {
+    $theme_colors = color_get_palette($theme);
+
+    $form['color']['palette']['second_menu_background'] = [
+      '#type' => 'textfield',
+      '#title' => t('Second Menu Background'),
+      '#value_callback' => 'color_paletter_color_value',
+      '#description' => t('Is used e.g. as background-color for the secondary menu.'),
+      '#default_value' => isset($theme_colors['second_menu_background']) ? $theme_colors['second_menu_background'] : $theme_colors['primary'],
+      '#size' => 8,
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ */
+function easyopac_second_menu_preprocess(&$variables, $hook) {
+  if ($hook == 'panels_pane' && $variables['pane']->panel === 'second_menu_tier') {
+    $theme = variable_get('theme_default', 'ddbasic');
+    $theme_colors = color_get_palette($theme);
+    // @todo: Move color to data attributes and process from css directly.
+    $variables['attributes_array']['style'] = ['background-color: ' . $theme_colors['second_menu_background']];
+  }
+}
